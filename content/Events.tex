@@ -1,0 +1,84 @@
+%! Author = mariuszindel
+%! Date = 02.11.20
+
+\section{Events}
+
+\subsection{Übersicht}
+\begin{itemize}
+    \item Reines Compiler-Feature / Syntactic Sugar
+\end{itemize}
+
+\subsection{Callback-Tick}
+\begin{itemize}
+    \item «OnTickEvent» Delegate wird private
+    \begin{itemize}
+        \item Kann also nur noch intern ausgelöst werden
+    \end{itemize}
+    \item Subscribe / Unsubscribe Logik wird public generiert
+    \item Observer bleibt identisch
+\end{itemize}
+
+\begin{lstlisting}
+public delegate void TickEventHandler (int ticks, int interval);
+
+public class Clock { £(Notifier/observer)£
+    public event TickEventHandler OnTickEvent;
+
+    private void Tick(object sender, EventArgs e) {
+    ticks++; OnTickEvent?.Invoke(ticks, interval); }
+}
+\end{lstlisting}
+
+
+\subsection{Event Handling im .NET Framework}
+
+Standard-Syntax bei Events:
+\begin{lstlisting}
+public delegate void AnyHandler(object sender, AnyEventArgs e);
+\end{lstlisting}
+
+\begin{itemize}
+    \item Rückgabetyp void
+    \item 1. Parameter object sender
+    \begin{itemize}
+        \item Sender des Events
+        \item Absender übergibt bei Aufruf des Delegates / Events «this» mit
+    \end{itemize}
+    \item 2. Parameter AnyEventArgs e
+    \begin{itemize}
+        \item Beliebige Sub-Klasse von «EventArgs»
+        \item Enthält Informationen zum Event
+        \item Argumente können jeder ergänzt werden ohne Anpassung der Signatur
+    \end{itemize}
+\end{itemize}
+
+\subsection{Anonyme Methoden}
+
+\subsubsection{Übersicht}
+\begin{itemize}
+    \item Methodencode wird in-place angegeben
+    \item Keine Deklaration einer Methode nötig
+    \item Anonyme Methode kann auf lokale Variable «sum» zugreifen
+    \item Return beendet anonyme Methode, nicht die äussere Methode
+\end{itemize}
+\begin{lstlisting}
+class AnonymousMethods {
+    void Foo() {
+        list.ForEach(delegate(int i)
+            { Console.WriteLine(i); }
+);
+
+    int sum = 0;
+    list.ForEach(delegate(int i)
+    { sum += i; });
+    }
+}
+\end{lstlisting}
+
+\subsubsection{Closures / Outer Variables (Äussere Variablen)}
+\begin{itemize}
+    \item Anonyme Methode greift auf Variable der umgebenden Methode zu
+    \item Variable wird in Hilfsobjekt ausgelagert
+    \item Hilfsobjekt gleich lange wie Delegate-Objekt
+    \item Adder ist eine Closure
+\end{itemize}

@@ -1,0 +1,271 @@
+%! Author = mariuszindel
+%! Date = 02.11.20
+
+\section{Vererbung}
+
+\subsection{Überblick}
+\begin{itemize}
+    \item Nur eine Basisklasse erlaubt
+    \item Beliebig viele Interfaces erlaubt
+    \item Structs können nicht erweitert werden
+    \item Structs können nicht erben
+    \item Structs können nur Interfaces implementieren
+    \item Klassen sind direkt / indirekt von System.Object abgeleitet
+    \item Structs sind über Boxing mit System.Object kompatibel
+\end{itemize}
+\subsubsection{Zuweisungen}
+Zuweisung immer möglich wenn
+\begin{itemize}
+    \item Statischer Typ gleich Dynamischer Typ
+    \item Statischer Typ Basisklasse von Dynamischem Typen
+\end{itemize}
+Zuweisung verboten wenn
+\begin{itemize}
+    \item Statischer Typ Subklasse von Dynamischem Typen
+    \item Statischer Typ und Dynamischer Typ nicht in der gleichen Vererbungshierarchie sind
+\end{itemize}
+\begin{lstlisting}
+class Base { }
+class Sub : Base { }
+class SubSub : Sub { }
+
+public static void Test()
+{
+// Statischer Typ: Base
+// Dynamischer Typ: Base
+    Base b = new Base();
+
+// Dynamischer Typ: Sub
+    b = new Sub();
+
+// Dynamischer Typ: SubSub
+    b = new SubSub();
+
+// Compilerfehler (Typecast)
+    Sub s = new Base();
+    }
+\end{lstlisting}
+\subsubsection{Typprüfungen}
+Prüft ob ein Objekt mit einem Typen kompatibel ist $\rightarrow$ Liefert bool\\
+
+Liefert true wenn:
+\begin{itemize}
+    \item Typ von «obj» identisch wie «T» ist
+    \item Typ von «obj» eine Sub-Klasse von «T» ist
+\end{itemize}
+Liefert false wenn
+\begin{itemize}
+    \item «obj» null ist
+    \item Typ von «obj» eine Basisklasse von «T» ist
+    \item Typ von «obj» und «T» nicht in der gleichen Vererbungshierarchie sind
+\end{itemize}
+\begin{lstlisting}
+if (a is SubSub) { /* ... */ }
+\end{lstlisting}
+
+\subsubsection{Type Casts}
+Explizite Typumwandlung als Hinweis für den Compiler
+\begin{itemize}
+    \item Anweisung an Compiler, einen Typen in einen anderen umzuwandeln
+    \item null kann auch gecastet werden
+    \item Compilerfehler wenn erkennbar, dass Type Cast nicht zulässig
+    \item Compilerfehler wenn erkennbar, dass null in einen Value Type gecastet wird
+    \item Laufzeit-Fehlverhalten: InvalidCastException
+\end{itemize}
+\begin{lstlisting}
+Sub s = (Sub)b;
+\end{lstlisting}
+
+\subsubsection{Type Casts mit as-Operator}
+ExpliziteTypumwandlungals Hinweis für den Compiler
+\begin{itemize}
+    \item Syntactic Sugar / Compiler erzeugt «obj is T ? (T)obj : (T)null»
+    \item Laufzeit-Fehlverhalten: null
+\end{itemize}
+\begin{lstlisting}
+Sub s = b as Sub;
+\end{lstlisting}
+
+\subsubsection{Typprüfungen mit implizitem Type Cast}
+PrüftobeinObjektmiteinemTypen kompatibel ist
+\begin{itemize}
+    \item Syntax: «obj is T result»
+    \item Variable «result» vom Typ «T» enthält gecasteten Wert
+    \item Funktioniert wie normaler Type Cast
+    \item Arbeitet nicht mit Nullable Types im Gegensatz zu «as»
+\end{itemize}
+\begin{lstlisting}
+Base a = new SubSub();
+if (a is SubSub casted) {
+Console.WriteLine(casted); }
+\end{lstlisting}
+
+
+\subsection{Methoden \& Vererbung}
+\subsubsection{Methoden überschreiben}
+Subklasse kann Members der Basisklasse überschreiben.\\
+$\rightarrow$ Schlüsselwörter «virtual» und «override»
+
+\begin{itemize}
+    \item Basisklasse:\\
+    «virtual» um Basis-Methode überschreibbar zu machen
+    \item Subklasse:\\
+    «override» um Basis-Methode zu überschreiben
+\end{itemize}
+\begin{lstlisting}
+class Base {
+public virtual void G() { /* ... */ } }
+class Sub : Base
+{
+public override void G() { /* ... */ } }
+\end{lstlisting}
+Regeln:
+\begin{itemize}
+    \item Members sind per Default NICHT «virtual»
+    \item Members sind per NICHT «overrride»
+    \item Signatur muss identisch sein
+\end{itemize}
+
+\subsubsection{Methoden überdecken}
+\begin{itemize}
+    \item Unterbricht Dynamic Binding!
+    \item Subklasse kann Members der Basisklasse überdecken
+\end{itemize}
+\subsubsection{Methoden überdecken mit «new»}
+\begin{itemize}
+    \item Compiler warnung kann mit «new» Schlüsselwort vermieden werden
+    \item Hinweis für Compiler, dass Member bewusst überdeckt wurde
+\end{itemize}
+\begin{lstlisting}
+class Base {
+public virtual void I() { /* ... */ } }
+class Sub : Base
+{
+public override void I() { /* ... */ } }
+class SubSub : Sub
+{
+public new void I() { /* ... */ }
+public new void I2() { /* ... */ } }
+\end{lstlisting}
+
+\subsubsection{Dynamic Binding / Regelwerk komplett in Pseudocode}
+Suche Vererbungs-Hierarchie von oben nach unten nach konkretester Methode «G()» mit Schlüsselwort «override»
+
+
+\subsection{Abstrakte \& Versiegelte Klassen}
+\subsubsection{Abstrakte Klassen}
+\begin{itemize}
+    \item Mischung aus Klasse und Interface
+    \item Kann nicht direkt instanziert werden
+    \item Kann beliebig viele Interfaces implementieren
+\end{itemize}
+\begin{lstlisting}
+abstract class Sequence {
+public abstract void Add(object x); // Method
+public abstract string Name { get; } // Prop.
+public abstract object this[int i] // Idx.
+{ get; set; }
+public abstract event EventHandler OnAdd;
+                                         // Event
+
+public override string ToString() { return Name; }
+}
+class List : Sequence
+{
+public override void Add(object x) { /* ... */ }
+public override string Name
+{ get { /* ... */ } }
+public override object this[int i]
+{ get { /* ... */ } set { /* ... */ } } public override event EventHandler OnAdd;}
+\end{lstlisting}
+\subsubsection{Abstrakte Methoden}
+\begin{itemize}
+    \item Kein Anweisungsteil
+    \item Sind implizit virtual
+    \item Dürfen nicht «static» oder «virtual» sein
+\end{itemize}
+\subsubsection{Abstrakte Properties / Indexer}
+\begin{itemize}
+    \item Kein Anweisungsteil
+    \item Sind implizit virtual
+    \item Dürfen nicht «static» oder «virtual» sein
+    \item «get» und «set» Kombination muss bei Implementation identisch sein
+\end{itemize}
+
+\subsubsection{Versiegelte Klassen}
+\begin{itemize}
+    \item Verhindert das Ableiten einer Klasse
+    \item Analog «final» bei Java
+    \item Sicherheitsaspekte verhindert versehentliches Erweitern
+\end{itemize}
+
+\begin{lstlisting}
+sealed class Sequence {
+    public void Add(object x) {}
+    public string Name { get{} }
+    public object this[int i] { get{} }
+    public event EventHandler OnAdd;
+}
+// Compilerfehler
+class List : Sequence { /* ... */ }
+\end{lstlisting}
+
+
+\subsubsection{Versiegelte Members}
+\begin{itemize}
+    \item Verhindert das Überschreiben eines bestimmten Members
+    \item Muss in Kombination mit «override» angewendet werden
+    \item Kombination mit «virtual» und «new» ist nicht erlaubt
+\end{itemize}
+\begin{lstlisting}
+class List {
+    public sealed void Add(object x) {}
+}
+class MyList : List
+{ // Compilerfehler
+    public override void Add(object x) {}
+}
+\end{lstlisting}
+
+\subsection{Interfaces}
+\begin{itemize}
+    \item Interface ähnelt einer rein abstrakten Klasse
+    \item Kann nicht direkt instanziiert werden
+    \item Interface kann andere Interfaces erweitern
+    \item Sichtbarkeit auf Members darf nicht angegeben werden
+    \item Members sind implizit «abstract virtual»
+    \item Members dürfen nicht «static» sein oder ausprogrammiert werden
+    \item «override» ist nicht nötig
+\end{itemize}
+\begin{lstlisting}
+interface ISequence {
+void Add(object x); // Method
+string Name { get; } // Propert
+object this[int i] { get; set; } // Indexer
+event EventHandler OnAdd; // Event
+\end{lstlisting}
+
+
+\subsection{Interfaces / NamingClashes}
+\begin{itemize}
+    \item Zwei Interfaces können gleiche Members definieren
+    \item Führt zu Kollisionen
+    \item Lösung: Explizites implementieren des Interfaces
+\end{itemize}
+
+Lösungsansatz mit Default Variante:
+\begin{lstlisting}
+class ShoppingCart : ISequence, IShoppingCart
+{
+    public void Add(object x) { /* ... */ }
+
+    void IShoppingCart.Add(object x) { /* ... */ }
+}
+
+// Anwendung:
+ShoppingCart sc = new ShoppingCart(); sc.Add("Hello"); // Add
+ISequence sc1 = new ShoppingCart(); sc1.Add("Hello"); // Add
+IShoppingCart sc2 = new ShoppingCart(); sc2.Add("Hello"); // IShoppingCart.Add
+\end{lstlisting}
+
+\newpage

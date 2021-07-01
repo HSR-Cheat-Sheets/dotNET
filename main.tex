@@ -1,0 +1,41 @@
+%import template
+\input{./styles/template.tex}
+
+% DocInfo
+\newcommand{\SUBJECT}{}
+\newcommand{\TITLE}{Cheat Sheet .NET}
+
+\begin{document}
+
+%import front page
+% \input{./front.tex}
+
+%do multicols
+\begin{multicols*}{3}
+    \setlength{\columnseprule}{0.4pt}
+		\footnotesize
+		
+%import tableofcontents
+% \input{./tableofcontents.tex}
+
+
+	\input{content/dotNet Grundlagen.tex}
+	\input{content/C# Grundlagen.tex}
+	\input{content/Klassen.tex}
+	\input{content/Vererbung.tex}
+	\input{content/Delegate.tex}
+	\input{content/Events.tex}
+	\input{content/Generics.tex}
+	\input{content/Iteratoren.tex}
+	\input{content/Exceptions.tex}
+	\input{content/LINQ.tex}
+	\input{content/Entity Framework Core.tex}
+	\input{content/gRPC.tex}
+	\input{content/Reflection.tex}
+	\input{content/Attributes.tex}
+
+\end{multicols*}
+
+% \input{./appendix.tex}
+
+\end{document}
